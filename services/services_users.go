@@ -1,5 +1,9 @@
 package services
 
+import (
+	"github.com/google/uuid"
+)
+
 //User user model
 type User struct {
 	ID   string
@@ -12,8 +16,14 @@ func initUsers() {
 
 //CreateUser --
 func CreateUser(name string) (*User, error) {
-
-	return nil, nil
+	user := &User{
+		ID:   uuid.New().String(),
+		Name: name,
+	}
+	if _, err := DB.Exec("insert into users (id, name) values($1, $2)", user.ID, user.Name); err != nil {
+		return nil, err
+	}
+	return user, nil
 }
 
 //LoadUser -z

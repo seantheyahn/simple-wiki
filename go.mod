@@ -2,6 +2,7 @@ module sean/wiki
 
 require (
 	github.com/gin-gonic/gin v1.5.0
+	github.com/google/uuid v1.1.1
 	github.com/jackc/pgx v3.6.1+incompatible
 	github.com/json-iterator/go v1.1.9
 	github.com/orcaman/concurrent-map v0.0.0-20190826125027-8c72a8bb44f6

@@ -1,4 +1,4 @@
 create table users (
     id varchar primary key,
-    name varchar
+    name varchar --TODO limit length
 );
