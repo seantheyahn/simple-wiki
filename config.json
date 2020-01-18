@@ -1,0 +1,13 @@
+{
+    "Server": {
+        "ListenAddress": ":8080"
+    },
+    "Db": {
+        "ConnectionURI": "postgres://test:test@localhost:5432/test?sslmode=disable",
+        "MaxOpenConns": 25,
+        "MaxIdleConns": 1
+    },
+    "Redis": {
+        "ConnectionURI": "redis://localhost:6370"
+    }
+}
