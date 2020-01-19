@@ -36,6 +36,8 @@ type rootUserConfig struct {
 	Password string
 }
 
+//TODO add config override with environment variables
+
 //Init the config with json file path
 func Init(filename string) {
 	log.Println("initialzing config")
