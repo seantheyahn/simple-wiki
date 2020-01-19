@@ -11,9 +11,10 @@ var Instance *Config
 
 //Config --
 type Config struct {
-	Server serverConfig
-	Db     dbConfig
-	Redis  redisConfig
+	Server   serverConfig
+	Db       dbConfig
+	Redis    redisConfig
+	RootUser rootUserConfig
 }
 
 type dbConfig struct {
@@ -28,6 +29,11 @@ type redisConfig struct {
 
 type serverConfig struct {
 	ListenAddress string
+}
+
+type rootUserConfig struct {
+	Username string
+	Password string
 }
 
 //Init the config with json file path

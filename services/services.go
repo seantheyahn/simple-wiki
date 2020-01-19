@@ -21,4 +21,10 @@ func Init() {
 	initRedis()
 	migrateDB()
 	initUsers()
+
+	test() //TODO remove
+}
+
+func test() {
+
 }
