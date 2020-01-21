@@ -7,11 +7,12 @@ import (
 	"net/url"
 	"path/filepath"
 	"regexp"
-	"sean/wiki/config"
 	"strconv"
 
 	"github.com/jackc/pgx"
 	"github.com/jackc/pgx/stdlib"
+
+	"github.com/seantheyahn/simple-wiki/config"
 )
 
 func initDB() *sql.DB {

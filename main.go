@@ -2,11 +2,10 @@ package main
 
 import (
 	"flag"
-	"sean/wiki/config"
-	"sean/wiki/server"
-	"sean/wiki/services"
-
 	_ "github.com/jackc/pgx/stdlib"
+	"github.com/seantheyahn/simple-wiki/config"
+	"github.com/seantheyahn/simple-wiki/server"
+	"github.com/seantheyahn/simple-wiki/services"
 )
 
 func main() {

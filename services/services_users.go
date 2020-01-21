@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"sean/wiki/config"
+	"github.com/seantheyahn/simple-wiki/config"
 	"time"
 
 	"github.com/google/uuid"
@@ -22,12 +22,6 @@ type User struct {
 
 //ErrUsernameAlreadyExists --
 var ErrUsernameAlreadyExists = errors.New("username already exists")
-
-//ErrInvalidUsernameFormat --
-var ErrInvalidUsernameFormat = errors.New("invalid username format")
-
-//ErrInvalidPasswordFormat --
-var ErrInvalidPasswordFormat = errors.New("invalid password format")
 
 //ErrAuthenticationFailed --
 var ErrAuthenticationFailed = errors.New("authentication failed")
