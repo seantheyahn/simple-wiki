@@ -29,6 +29,7 @@ type redisConfig struct {
 
 type serverConfig struct {
 	ListenAddress string
+	CookieSecret  string
 }
 
 type rootUserConfig struct {

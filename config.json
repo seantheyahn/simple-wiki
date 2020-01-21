@@ -1,6 +1,7 @@
 {
     "Server": {
-        "ListenAddress": ":8080"
+        "ListenAddress": ":8080",
+        "CookieSecret": "my-super-secret-cookie-secret"
     },
     "Db": {
         "ConnectionURI": "postgres://test:test@localhost:5432/test?sslmode=disable",

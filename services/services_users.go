@@ -103,7 +103,7 @@ func AuthenticateUser(username string, password string) (user *User, err error) 
 		}
 		return
 	}
-	if CheckPasswordHash(password, passwordHash) {
+	if !CheckPasswordHash(password, passwordHash) {
 		err = ErrAuthenticationFailed
 		return
 	}
@@ -136,3 +136,5 @@ func UpdateUser(id string, username string, admin bool) error {
 	}
 	return err
 }
+
+//TODO change password method
