@@ -3,8 +3,8 @@ package services
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"github.com/seantheyahn/simple-wiki/config"
+	"log"
 	"time"
 
 	"github.com/google/uuid"
@@ -53,7 +53,10 @@ func CreateUser(username string, password string, admin bool, root bool) (*User,
 	} else {
 		user.ID = uuid.New().String()
 	}
-	passwordHash := GetSHA256Hex([]byte(password))
+	passwordHash, err := HashPassword(password)
+	if err != nil {
+		return nil, err
+	}
 
 	row := DB.QueryRow("insert into users (id, username, password_hash, admin) values($1,$2,$3,$4) returning created_at, updated_at", user.ID, user.Username, passwordHash, user.Admin)
 
@@ -90,7 +93,6 @@ func UserFindIDByUserName(username string) (id string, err error) {
 
 //AuthenticateUser --
 func AuthenticateUser(username string, password string) (user *User, err error) {
-	inputHash := GetSHA256Hex([]byte(password))
 	var passwordHash string
 	var id string
 	err = DB.QueryRow("select id, password_hash from users where username=$1", username).Scan(&id, &passwordHash)
@@ -101,7 +103,7 @@ func AuthenticateUser(username string, password string) (user *User, err error) 
 		}
 		return
 	}
-	if passwordHash != inputHash {
+	if CheckPasswordHash(password, passwordHash) {
 		err = ErrAuthenticationFailed
 		return
 	}

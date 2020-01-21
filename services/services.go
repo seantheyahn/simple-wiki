@@ -26,5 +26,4 @@ func Init() {
 }
 
 func test() {
-
 }
