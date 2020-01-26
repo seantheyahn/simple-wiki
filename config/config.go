@@ -11,30 +11,23 @@ var Instance *Config
 
 //Config --
 type Config struct {
-	Server   serverConfig
-	Db       dbConfig
-	Redis    redisConfig
-	RootUser rootUserConfig
-}
-
-type dbConfig struct {
-	ConnectionURI string
-	MaxOpenConns  int
-	MaxIdleConns  int
-}
-
-type redisConfig struct {
-	ConnectionURI string
-}
-
-type serverConfig struct {
-	ListenAddress string
-	CookieSecret  string
-}
-
-type rootUserConfig struct {
-	Username string
-	Password string
+	Server struct {
+		ListenAddress string
+		CookieSecret  string
+		CSRFSecret    string
+	}
+	Db struct {
+		ConnectionURI string
+		MaxOpenConns  int
+		MaxIdleConns  int
+	}
+	Redis struct {
+		ConnectionURI string
+	}
+	RootUser struct {
+		Username string
+		Password string
+	}
 }
 
 //TODO add config override with environment variables

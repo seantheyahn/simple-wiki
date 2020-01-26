@@ -8,6 +8,7 @@
             <form action="/login" method="post">
                 <p><input type="text" name="username" id="username" placeholder="Username" value="{{.Username}}" ></p>
                 <p><input type="password" name="password" id="password" placeholder="Password" value="{{.Password}}"></p>
+                <input type="hidden" name="_csrf" value="{{.CSRF}}">
                 {{if .Err}}<p class="text-danger">{{ .Err}}</p>{{end}}
                 <button class="btn btn-primary btn-login" type="submit">Login</button>
             </form>

@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/seantheyahn/simple-wiki/config"
 	"github.com/seantheyahn/simple-wiki/services"
+	csrf "github.com/utrack/gin-csrf"
 )
 
 func loadTemplates(templatesDir string) multitemplate.Renderer {
@@ -56,12 +57,16 @@ func login(c *gin.Context) {
 		return
 	}
 
+	data := new(struct {
+		Username string `form:"username" binding:"required"`
+		Password string `form:"password" binding:"required"`
+		Err      string
+		CSRF     string
+	})
+
+	data.CSRF = csrf.GetToken(c)
+
 	if c.Request.Method == "POST" {
-		data := new(struct {
-			Username string `form:"username" binding:"required"`
-			Password string `form:"password" binding:"required"`
-			Err      string
-		})
 		if err := c.Bind(&data); err != nil {
 			c.String(400, "bad-request")
 			return
@@ -78,8 +83,6 @@ func login(c *gin.Context) {
 				return
 			}
 		}
-		// j, _ := json.Marshal(user)
-		// s.Set("user", j)
 		s.Set("user", user)
 		if err = s.Save(); err != nil {
 			log.Println(err)
@@ -91,7 +94,7 @@ func login(c *gin.Context) {
 		return
 	}
 
-	c.HTML(200, "login.html", nil)
+	c.HTML(200, "login.html", data)
 }
 
 func logout(c *gin.Context) {
@@ -110,6 +113,14 @@ func Run() {
 	router := gin.Default()
 	router.HTMLRender = loadTemplates("./views")
 	router.Use(sessions.Sessions("user", cookie.NewStore([]byte(config.Instance.Server.CookieSecret))))
+	router.Use(csrf.Middleware(csrf.Options{
+		Secret: config.Instance.Server.CSRFSecret,
+		ErrorFunc: func(c *gin.Context) {
+			c.String(400, "CSRF token mismatch")
+			c.Abort()
+		},
+	}))
+
 	gob.Register(&services.User{})
 
 	router.GET("/", index)
