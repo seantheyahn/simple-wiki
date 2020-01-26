@@ -2,6 +2,7 @@ package services
 
 import (
 	"database/sql"
+	"encoding/gob"
 )
 
 func checkPanic(err error) {
@@ -20,6 +21,8 @@ func Init() {
 	DB = initDB()
 	migrateDB()
 	initUsers()
+
+	gob.Register(new(User))
 
 	test() //TODO remove
 }

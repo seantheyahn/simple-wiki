@@ -3,6 +3,7 @@
         "ListenAddress": ":8080",
         "CookieSecret": "my-super-secret-cookie-secret",
         "CSRFSecret": "my-csrf-token-secret",
+        "DevelopmentMode": true,
         "IPRateLimiter": {
             "ReqPerSecond": 10,
             "ReqBurst": 10
@@ -21,14 +22,6 @@
         "Password": "my-complex-password"
     },
     "Logging": {
-        "Level": "debug",
-        "Encoding": "json",
-        "OutputPaths": ["stdout"],
-        "ErrorOutputPaths": ["stderr"],
-        "EncoderConfig": {
-            "MessageKey": "message",
-            "LevelKey": "level",
-            "LevelEncoder": "lowercase"
-        }
+        "Level": "debug"
     }
 }

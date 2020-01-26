@@ -13,10 +13,11 @@ var Instance *Config
 //Config --
 type Config struct {
 	Server struct {
-		ListenAddress string
-		CookieSecret  string
-		CSRFSecret    string
-		IPRateLimiter struct {
+		ListenAddress   string
+		CookieSecret    string
+		CSRFSecret      string
+		DevelopmentMode bool
+		IPRateLimiter   struct {
 			ReqPerSecond int
 			ReqBurst     int
 		}
@@ -33,7 +34,9 @@ type Config struct {
 		Username string
 		Password string
 	}
-	Logging zap.Config
+	Logging struct {
+		Level zap.AtomicLevel
+	}
 }
 
 //TODO add config override with environment variables

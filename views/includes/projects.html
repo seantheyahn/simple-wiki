@@ -1,0 +1,32 @@
+{{define "head"}}{{end}}
+{{define "title"}}Projects{{end}}
+{{define "body"}}
+<div class="container">
+    <div class="row"><h1>Projects</h1></div>
+    <div class="row">
+        <h2>User Projects</h2>
+        <div class="col-2">
+            <a class="btn btn-secondary" href="/projects/create">New Project</a>
+        </div>        
+        <div class="container row">
+            <ul>
+                {{range .UserProjects}}
+                <li><p>{{.Title}} - {{.Description}} <a href="/projects/edit/{{.ID}}">Edit</a> <a href="/projects/delete/{{.ID}}">Delete</a></p></li>
+                {{end}}
+            </ul>
+        </div>
+    </div>
+    {{if .AllProjects}}
+    <div class="row">
+        <h2>All Projects</h2>      
+        <div class="container row">
+            <ul>
+                {{range .AllProjects}}
+                <li><p>{{.Title}} - {{.Description}}</p></li>
+                {{end}}
+            </ul>
+        </div>  
+    </div>
+    {{end}}
+</div>
+{{end}}
