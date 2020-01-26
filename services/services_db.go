@@ -15,7 +15,7 @@ import (
 )
 
 func initDB() *sql.DB {
-	dbConf := config.Instance.Db
+	dbConf := config.Instance.DB
 	uri := dbConf.ConnectionURI
 	Logger.Info("initializing database ", uri)
 	parsedURL, err := url.Parse(uri)

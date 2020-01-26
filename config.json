@@ -9,7 +9,7 @@
             "ReqBurst": 10
         }
     },
-    "Db": {
+    "DB": {
         "ConnectionURI": "postgres://test:test@localhost:5432/test?sslmode=disable",
         "MaxOpenConns": 25,
         "MaxIdleConns": 1
