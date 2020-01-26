@@ -2,7 +2,11 @@
     "Server": {
         "ListenAddress": ":8080",
         "CookieSecret": "my-super-secret-cookie-secret",
-        "CSRFSecret": "my-csrf-token-secret"
+        "CSRFSecret": "my-csrf-token-secret",
+        "IPRateLimiter": {
+            "ReqPerSecond": 10,
+            "ReqBurst": 10
+        }
     },
     "Db": {
         "ConnectionURI": "postgres://test:test@localhost:5432/test?sslmode=disable",

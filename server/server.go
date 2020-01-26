@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"log"
 	"path/filepath"
+	"time"
 
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
@@ -12,6 +13,8 @@ import (
 	"github.com/seantheyahn/simple-wiki/config"
 	"github.com/seantheyahn/simple-wiki/services"
 	csrf "github.com/utrack/gin-csrf"
+	limit "github.com/yangxikun/gin-limit-by-key"
+	"golang.org/x/time/rate"
 )
 
 func loadTemplates(templatesDir string) multitemplate.Renderer {
@@ -46,7 +49,11 @@ func index(c *gin.Context) {
 		return
 	}
 
-	c.HTML(200, "index.html", u)
+	data := struct {
+		User interface{}
+	}{u}
+
+	c.HTML(200, "index.html", data)
 }
 
 func login(c *gin.Context) {
@@ -62,6 +69,7 @@ func login(c *gin.Context) {
 		Password string `form:"password" binding:"required"`
 		Err      string
 		CSRF     string
+		User     *services.User
 	})
 
 	data.CSRF = csrf.GetToken(c)
@@ -112,7 +120,11 @@ func logout(c *gin.Context) {
 func Run() {
 	router := gin.Default()
 	router.HTMLRender = loadTemplates("./views")
+
+	//sessions middleware
 	router.Use(sessions.Sessions("user", cookie.NewStore([]byte(config.Instance.Server.CookieSecret))))
+
+	//CSRF middleware
 	router.Use(csrf.Middleware(csrf.Options{
 		Secret: config.Instance.Server.CSRFSecret,
 		ErrorFunc: func(c *gin.Context) {
@@ -121,8 +133,22 @@ func Run() {
 		},
 	}))
 
+	//rate limiter middleware
+	router.Use(limit.NewRateLimiter(func(c *gin.Context) string {
+		return c.ClientIP() // limit rate by client ip
+	}, func(c *gin.Context) (*rate.Limiter, time.Duration) {
+		interval := time.Duration(int(time.Second) / config.Instance.Server.IPRateLimiter.ReqPerSecond)
+		burst := config.Instance.Server.IPRateLimiter.ReqBurst
+		return rate.NewLimiter(rate.Every(interval), burst), time.Minute
+	}, func(c *gin.Context) {
+		c.String(429, "too-many-requests")
+		c.Abort()
+	}))
+
+	//register types used in sessions to gob
 	gob.Register(&services.User{})
 
+	//routes
 	router.GET("/", index)
 	router.GET("/login", login)
 	router.POST("/login", login)

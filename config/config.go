@@ -15,6 +15,10 @@ type Config struct {
 		ListenAddress string
 		CookieSecret  string
 		CSRFSecret    string
+		IPRateLimiter struct {
+			ReqPerSecond int
+			ReqBurst     int
+		}
 	}
 	Db struct {
 		ConnectionURI string
