@@ -3,9 +3,9 @@ package services
 import (
 	"database/sql"
 	"errors"
-	"github.com/seantheyahn/simple-wiki/config"
-	"log"
 	"time"
+
+	"github.com/seantheyahn/simple-wiki/config"
 
 	"github.com/google/uuid"
 	"github.com/jackc/pgx"
@@ -38,7 +38,7 @@ func initUsers() {
 		panic(err)
 	}
 	if user != nil {
-		log.Println("created root user with username:", user.Username)
+		Logger.Info("created root user with username: ", user.Username)
 	}
 }
 

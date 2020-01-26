@@ -2,7 +2,6 @@ package services
 
 import (
 	"database/sql"
-	"log"
 )
 
 func checkPanic(err error) {
@@ -16,13 +15,18 @@ var DB *sql.DB
 
 //Init --
 func Init() {
-	log.Println("initializing services")
+	initLogger()
+	Logger.Info("initializing services")
 	DB = initDB()
-	initRedis()
 	migrateDB()
 	initUsers()
 
 	test() //TODO remove
+}
+
+//Finalize --
+func Finalize() {
+	finalizeLogger()
 }
 
 func test() {

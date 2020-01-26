@@ -9,6 +9,7 @@ import (
 	"github.com/gin-contrib/multitemplate"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
+	ginzap "github.com/gin-contrib/zap"
 	"github.com/gin-gonic/gin"
 	"github.com/seantheyahn/simple-wiki/config"
 	"github.com/seantheyahn/simple-wiki/services"
@@ -36,7 +37,6 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 		copy(layoutCopy, layouts)
 		files := append(layoutCopy, include)
 		r.AddFromFiles(filepath.Base(include), files...)
-		log.Println(r)
 	}
 	return r
 }
@@ -118,8 +118,14 @@ func logout(c *gin.Context) {
 
 //Run runs the http server blocking mode
 func Run() {
-	router := gin.Default()
+	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 	router.HTMLRender = loadTemplates("./views")
+	router.Use(gin.Recovery())
+
+	//logger middleware
+	router.Use(ginzap.Ginzap(services.LoggerCore, time.RFC3339, true))
+	router.Use(ginzap.RecoveryWithZap(services.LoggerCore, true))
 
 	//sessions middleware
 	router.Use(sessions.Sessions("user", cookie.NewStore([]byte(config.Instance.Server.CookieSecret))))
@@ -154,5 +160,6 @@ func Run() {
 	router.POST("/login", login)
 	router.GET("/logout", logout)
 
+	services.Logger.Infof("listening on %v", config.Instance.Server.ListenAddress)
 	log.Fatal(router.Run(config.Instance.Server.ListenAddress))
 }

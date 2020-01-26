@@ -3,7 +3,8 @@ package config
 import (
 	"encoding/json"
 	"io/ioutil"
-	"log"
+
+	"go.uber.org/zap"
 )
 
 //Instance config instance
@@ -32,13 +33,13 @@ type Config struct {
 		Username string
 		Password string
 	}
+	Logging zap.Config
 }
 
 //TODO add config override with environment variables
 
 //Init the config with json file path
 func Init(filename string) {
-	log.Println("initialzing config")
 	data, err := ioutil.ReadFile(filename)
 	if err != nil {
 		panic(err)

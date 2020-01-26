@@ -15,5 +15,6 @@ func main() {
 
 	config.Init(configPath)
 	services.Init()
+	defer services.Finalize()
 	server.Run()
 }

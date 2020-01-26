@@ -3,7 +3,6 @@ package services
 import (
 	"database/sql"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"path/filepath"
 	"regexp"
@@ -18,7 +17,7 @@ import (
 func initDB() *sql.DB {
 	dbConf := config.Instance.Db
 	uri := dbConf.ConnectionURI
-	log.Println("initializing database", uri)
+	Logger.Info("initializing database ", uri)
 	parsedURL, err := url.Parse(uri)
 	checkPanic(err)
 	db, err := sql.Open("pgx", parsedURL.String())
@@ -28,7 +27,7 @@ func initDB() *sql.DB {
 
 	var dbVersion string
 	checkPanic(db.QueryRow("select version()").Scan(&dbVersion))
-	log.Println("database version:", dbVersion)
+	Logger.Debug("database version: ", dbVersion)
 	return db
 }
 
@@ -41,7 +40,7 @@ func migrateDB() {
 	conn, err := stdlib.AcquireConn(DB)
 	checkPanic(err)
 	defer stdlib.ReleaseConn(DB, conn)
-	log.Println("performing db migrations")
+	Logger.Info("performing db migrations")
 	_, err = conn.Exec(`create table if not exists _migrations (
 			key varchar primary key,
 			version int not null default 0
@@ -69,7 +68,7 @@ func migrateDB() {
 					}
 					q, err := ioutil.ReadFile(_filePath)
 					checkPanic(err)
-					log.Printf("migrating '%s' from version %v to %v\n", key, currentV, v)
+					Logger.Infof("migrating '%s' from version %v to %v", key, currentV, v)
 					tx, err := conn.Begin()
 					checkPanic(err)
 					_, err = tx.Exec(string(q))
@@ -81,5 +80,5 @@ func migrateDB() {
 			}
 		}
 	}
-	log.Println("finished db migrations")
+	Logger.Info("finished db migrations")
 }

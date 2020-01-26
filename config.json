@@ -19,5 +19,16 @@
     "RootUser": {
         "Username": "root",
         "Password": "my-complex-password"
+    },
+    "Logging": {
+        "Level": "debug",
+        "Encoding": "json",
+        "OutputPaths": ["stdout"],
+        "ErrorOutputPaths": ["stderr"],
+        "EncoderConfig": {
+            "MessageKey": "message",
+            "LevelKey": "level",
+            "LevelEncoder": "lowercase"
+        }
     }
 }
