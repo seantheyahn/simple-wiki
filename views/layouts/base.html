@@ -15,7 +15,7 @@
 <body> 
     <!-- nav bar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="/">Simple Wiki</a>
+        <a class="navbar-brand" href="/"><span class="fas fa-book-open"></span> Simple Wiki</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
@@ -35,7 +35,7 @@
           </ul>
           {{if .User}}
           <div class="pl-2 pr-2 text-secondary">{{.User.Username}}</div>
-          <a href="/auth/logout" class="btn btn-outline-danger">Log out</a>
+          <a href="/auth/logout" class="btn btn-outline-danger"><span class="fas fa-user"></span> Log out</a>
           {{end}}
         </div>
       </nav>
