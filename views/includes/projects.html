@@ -1,19 +1,31 @@
 {{define "head"}}{{end}}
 {{define "title"}}Projects{{end}}
 {{define "body"}}
+<style>
+    .table-row{
+        cursor:pointer;
+    }        
+</style>
+
 <div class="container">
-    <div class="row"><h1>Projects</h1></div>
+    <div class="row"><h1 class="col-12 text-center mt-4 mb-4">Projects</h1></div>
     <div class="row">
-        <h2>User Projects</h2>
-        <div class="col-2">
-            <a class="btn btn-secondary" href="/projects/create">New Project</a>
+        <h4 class="col-2">User Projects</h4>
+        <div class="offset-8 col-2 text-right">
+            <a class="btn btn-primary text-white" data-toggle="modal" data-target="#newProject">New Project</a>
         </div>        
         <div class="container row">
-            <ul>
-                {{range .UserProjects}}
-                <li><p>{{.Title}} - {{.Description}} <a href="/projects/edit/{{.ID}}">Edit</a> <a href="/projects/delete/{{.ID}}">Delete</a></p></li>
-                {{end}}
-            </ul>
+            <table class="table table-hover mt-2">
+                <tbody>
+                    {{range .UserProjects}}
+                    <tr class="table-row" data-href='/projects/view/{{.ID}}'>
+                        <td>{{.Title}}</td>
+                        <td>{{.Description}}</td>
+                        <td class="text-right"><a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit m-2"></span></a><a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash"></span></a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
         </div>
     </div>
     {{if .AllProjects}}
@@ -28,5 +40,88 @@
         </div>  
     </div>
     {{end}}
+
+    <div class="modal" id="checkDelete" tabindex="-1" role="dialog" aria-labelledby="checkDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="checkDeleteLabel">Delete Project</h5>                    
+                </div>
+                <div class="modal-body">
+                    You are about to delete the project, are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button class="btn btn-danger" id="delete-yes-button">Yes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="newProject" tabindex="-1" role="dialog" aria-labelledby="newProjectLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form action="/projects/create" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="newProjectLabel">New Project</h5>                    
+                    </div>
+                    <div class="modal-body">
+                        <input class="mb-1 form-control" type="text" name="title" placeholder="Title">
+                        <input class="form-control" type="text" name="description" placeholder="Description">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Create</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="editProject" tabindex="-1" role="dialog" aria-labelledby="editProjectLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form id="editProjectForm" action="/projects/edit/:id" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editProjectLabel">Edit Project</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input class="mb-1 form-control" type="text" name="title" id="editProjectTitle" placeholder="Title">
+                        <input class="form-control" type="text" name="description" id="editProjectDescription" placeholder="Description">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Update</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function deleteProject(id) {
+            $("#delete-yes-button").one("click", function(){
+                let form = $("<form/>", {
+                    action: "/projects/delete/"+id,
+                    method: "POST"
+                });
+                form.submit();
+            });            
+            $("#checkDelete").modal("show");
+        };
+
+        function prepareEditProject(id, currentTitle, currentDescription) {
+            $('#editProjectForm').attr('action', '/projects/edit/'+id);
+            $('#editProject').modal('show');
+            $('#editProjectTitle').val(currentTitle);
+            $('#editProjectDescription').val(currentDescription);
+        }
+
+        $(document).ready(function($) {
+            $(".table-row").click(function() {
+                window.document.location = $(this).data("href");
+            });
+        });
+    </script>
 </div>
 {{end}}

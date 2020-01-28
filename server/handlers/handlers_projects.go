@@ -45,29 +45,20 @@ func createProject(c *gin.Context) {
 		Title       string `form:"title" binding:"required"`
 		Description string `form:"description" binding:"required"`
 	}
-	data := new(struct {
-		User    *services.User
-		Project *form
-		Err     string
-	})
-	data.User = getUser(c)
-	data.Project = new(form)
+	user := getUser(c)
+	project := new(form)
 
-	if c.Request.Method == "POST" {
-		c.Bind(&data.Project)
-		if data.Project.Title == "" {
-			data.Err = "Project title cannot be empty"
-		} else {
-			_, err := services.CreateProject(data.Project.Title, data.Project.Description, data.User)
-			if checkError(c, err) {
-				return
-			}
-			c.Redirect(302, "/projects")
-			return
-		}
+	c.Bind(&project)
+	if project.Title == "" {
+		c.String(400, "bad-request")
+		return
 	}
 
-	c.HTML(200, "create-project.html", data)
+	_, err := services.CreateProject(project.Title, project.Description, user)
+	if checkError(c, err) {
+		return
+	}
+	c.Redirect(302, "/projects")
 }
 
 func editProject(c *gin.Context) {
@@ -75,18 +66,13 @@ func editProject(c *gin.Context) {
 		Title       string `form:"title" binding:"required"`
 		Description string `form:"description" binding:"required"`
 	}
-	data := new(struct {
-		User    *services.User
-		Project *form
-		Err     string
-	})
-	data.User = getUser(c)
-	data.Project = new(form)
+	user := getUser(c)
+	project := new(form)
 	id, err := strconv.Atoi(c.Param("id"))
 	if checkError(c, err) {
 		return
 	}
-	pu, err := services.LoadProjectUser(id, data.User.ID)
+	pu, err := services.LoadProjectUser(id, user.ID)
 	if checkError(c, err) {
 		return
 	}
@@ -98,22 +84,42 @@ func editProject(c *gin.Context) {
 	if checkError(c, err) {
 		return
 	}
-	data.Project.Title = p.Title
-	data.Project.Description = p.Description
+	project.Title = p.Title
+	project.Description = p.Description
 
-	if c.Request.Method == "POST" {
-		c.Bind(&data.Project)
-		if data.Project.Title == "" {
-			data.Err = "Project title cannot be empty"
-		} else {
-			err := services.UpdateProject(id, data.Project.Title, data.Project.Description)
-			if checkError(c, err) {
-				return
-			}
-			c.Redirect(302, "/projects")
-			return
-		}
+	c.Bind(&project)
+	if project.Title == "" {
+		c.String(400, "bad-request")
+		return
 	}
 
-	c.HTML(200, "edit-project.html", data)
+	err = services.UpdateProject(id, project.Title, project.Description)
+	if checkError(c, err) {
+		return
+	}
+	c.Redirect(302, "/projects")
+}
+
+func deleteProject(c *gin.Context) {
+	type form struct {
+		Title       string `form:"title" binding:"required"`
+		Description string `form:"description" binding:"required"`
+	}
+	user := getUser(c)
+	id, err := strconv.Atoi(c.Param("id"))
+	if checkError(c, err) {
+		return
+	}
+	pu, err := services.LoadProjectUser(id, user.ID)
+	if checkError(c, err) {
+		return
+	}
+	if !pu.CanWrite {
+		c.String(403, "permission-denied")
+		return
+	}
+	if checkError(c, services.DeleteProject(id)) {
+		return
+	}
+	c.Redirect(302, "/projects")
 }
