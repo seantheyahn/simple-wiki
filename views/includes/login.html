@@ -1,13 +1,13 @@
 {{define "head"}}{{end}}
 {{define "title"}}Login{{end}}
 {{define "body"}}
-<div class="container">
+<div class="container mt-2">
     <div class="row">
         <div class="offset-4 col-4 jumbotron text-center">
-            <h1>Simple Wiki</h1>
+            <h1>Login</h1>
             <form action="/auth/login" method="post">
-                <p><input type="text" name="username" id="username" placeholder="Username" value="{{.Username}}" ></p>
-                <p><input type="password" name="password" id="password" placeholder="Password" value="{{.Password}}"></p>
+                <p><input class="form-control" type="text" name="username" id="username" placeholder="Username" value="{{.Username}}" ></p>
+                <p><input class="form-control" type="password" name="password" id="password" placeholder="Password" value="{{.Password}}"></p>
                 <input type="hidden" name="_csrf" value="{{.CSRF}}">
                 {{if .Err}}<p class="text-danger">{{ .Err}}</p>{{end}}
                 <button class="btn btn-primary btn-login" type="submit">Login</button>

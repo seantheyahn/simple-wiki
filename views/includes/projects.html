@@ -13,13 +13,13 @@
         <h4 class="col-2">User Projects</h4>
         <div class="offset-8 col-2 text-right">
             <a class="btn btn-primary text-white" data-toggle="modal" data-target="#newProject">New Project</a>
-        </div>        
+        </div>
         <div class="container row">
             <table class="table table-hover mt-2">
                 <tbody>
                     {{range .UserProjects}}
-                    <tr class="table-row" data-href='/projects/view/{{.ID}}'>
-                        <td>{{.Title}}</td>
+                    <tr>
+                        <td class="table-row" data-href='/projects/view/{{.ID}}'>{{.Title}}</td>
                         <td>{{.Description}}</td>
                         <td class="text-right"><a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit m-2"></span></a><a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash"></span></a></td>
                     </tr>
@@ -30,14 +30,20 @@
     </div>
     {{if .AllProjects}}
     <div class="row">
-        <h2>All Projects</h2>      
+        <h4 class="col-2">All Projects</h4>
         <div class="container row">
-            <ul>
-                {{range .AllProjects}}
-                <li><p>{{.Title}} - {{.Description}}</p></li>
-                {{end}}
-            </ul>
-        </div>  
+            <table class="table table-hover mt-2">
+                <tbody>
+                    {{range .AllProjects}}
+                    <tr>
+                        <td class="table-row" data-href='/projects/view/{{.ID}}'>{{.Title}}</td>
+                        <td>{{.Description}}</td>
+                        <td class="text-right"><a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit m-2"></span></a><a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash"></span></a></td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
     </div>
     {{end}}
 
@@ -48,7 +54,7 @@
                     <h5 class="modal-title" id="checkDeleteLabel">Delete Project</h5>                    
                 </div>
                 <div class="modal-body">
-                    You are about to delete the project, are you sure?
+                    You are about to delete this project, are you sure?
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" data-dismiss="modal">No</button>

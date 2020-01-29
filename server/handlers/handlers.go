@@ -41,9 +41,16 @@ func AddHandlers(router *gin.Engine) {
 	{
 		r := privateRouter.Group("/projects")
 		r.GET("/", projectsIndex)
+		r.GET("/view/:id", viewProject)
 		r.POST("/edit/:id", editProject)
 		r.POST("/delete/:id", deleteProject)
 		r.POST("/create", createProject)
+	}
+	{
+		r := privateRouter.Group("/documents")
+		r.POST("/edit", editDocument)
+		r.POST("/delete", deleteDocument)
+		r.POST("/create", createDocument)
 	}
 }
 

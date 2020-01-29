@@ -1,6 +1,7 @@
 package services
 
 import (
+	"sort"
 	"time"
 )
 
@@ -24,7 +25,7 @@ func CreateDocument(projectID int, title string, body string, path string) (docu
 		Path:      path,
 	}
 
-	err = DB.QueryRow("insert into documents (project_id, title, body, path) values($1,$2,$3,$4) returning (created_at,updated_at,id)", projectID, title, body, path).Scan(&document.CreatedAt, &document.UpdatedAt, &document.ID)
+	err = DB.QueryRow("insert into documents (project_id, title, body, path) values($1,$2,$3,$4) returning created_at,updated_at,id", projectID, title, body, path).Scan(&document.CreatedAt, &document.UpdatedAt, &document.ID)
 	return
 }
 
@@ -45,6 +46,10 @@ func LoadDocuments(projectID int) ([]*Document, error) {
 		}
 		result = append(result, doc)
 	}
+
+	sort.Slice(result, func(i int, j int) bool {
+		return result[i].CreatedAt.Unix() < result[j].CreatedAt.Unix()
+	})
 	return result, nil
 }
 

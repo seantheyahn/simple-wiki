@@ -1,6 +1,7 @@
 package server
 
 import (
+	"html/template"
 	"log"
 	"path/filepath"
 	"time"
@@ -34,7 +35,11 @@ func loadTemplates(templatesDir string) multitemplate.Renderer {
 		layoutCopy := make([]string, len(layouts))
 		copy(layoutCopy, layouts)
 		files := append(layoutCopy, include)
-		r.AddFromFiles(filepath.Base(include), files...)
+		r.AddFromFilesFuncs(filepath.Base(include), template.FuncMap{
+			"htmlSafe": func(html string) template.HTML {
+				return template.HTML(html)
+			},
+		}, files...)
 	}
 	return r
 }

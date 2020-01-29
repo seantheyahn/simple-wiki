@@ -1,9 +1,10 @@
 package handlers
 
 import (
+	"strconv"
+
 	"github.com/gin-gonic/gin"
 	"github.com/seantheyahn/simple-wiki/services"
-	"strconv"
 )
 
 func projectsIndex(c *gin.Context) {
@@ -48,7 +49,7 @@ func createProject(c *gin.Context) {
 	user := getUser(c)
 	project := new(form)
 
-	c.Bind(&project)
+	c.Bind(project)
 	if project.Title == "" {
 		c.String(400, "bad-request")
 		return
@@ -72,13 +73,15 @@ func editProject(c *gin.Context) {
 	if checkError(c, err) {
 		return
 	}
-	pu, err := services.LoadProjectUser(id, user.ID)
-	if checkError(c, err) {
-		return
-	}
-	if !pu.CanWrite {
-		c.String(403, "permission-denied")
-		return
+	if !user.Admin {
+		pu, err := services.LoadProjectUser(id, user.ID)
+		if checkError(c, err) {
+			return
+		}
+		if !pu.CanWrite {
+			c.String(403, "permission-denied")
+			return
+		}
 	}
 	p, err := services.LoadProject(id)
 	if checkError(c, err) {
@@ -87,7 +90,7 @@ func editProject(c *gin.Context) {
 	project.Title = p.Title
 	project.Description = p.Description
 
-	c.Bind(&project)
+	c.Bind(project)
 	if project.Title == "" {
 		c.String(400, "bad-request")
 		return
@@ -101,25 +104,54 @@ func editProject(c *gin.Context) {
 }
 
 func deleteProject(c *gin.Context) {
-	type form struct {
-		Title       string `form:"title" binding:"required"`
-		Description string `form:"description" binding:"required"`
-	}
 	user := getUser(c)
 	id, err := strconv.Atoi(c.Param("id"))
 	if checkError(c, err) {
 		return
 	}
-	pu, err := services.LoadProjectUser(id, user.ID)
-	if checkError(c, err) {
-		return
-	}
-	if !pu.CanWrite {
-		c.String(403, "permission-denied")
-		return
+	if !user.Admin {
+		pu, err := services.LoadProjectUser(id, user.ID)
+		if checkError(c, err) {
+			return
+		}
+		if !pu.CanWrite {
+			c.String(403, "permission-denied")
+			return
+		}
 	}
 	if checkError(c, services.DeleteProject(id)) {
 		return
 	}
 	c.Redirect(302, "/projects")
+}
+
+func viewProject(c *gin.Context) {
+	data := new(struct {
+		User      *services.User
+		Project   *services.Project
+		Documents []*services.Document
+		Role      *services.ProjectUser
+	})
+	id, err := strconv.Atoi(c.Param("id"))
+	if checkError(c, err) {
+		return
+	}
+	data.User = getUser(c)
+	if data.User.Admin {
+		data.Role = &services.ProjectUser{ProjectID: data.Project.ID, UserID: data.User.ID, CanWrite: true}
+	} else {
+		data.Role, err = services.LoadProjectUser(id, data.User.ID)
+		if checkError(c, err) {
+			return
+		}
+	}
+	data.Project, err = services.LoadProject(id)
+	if checkError(c, err) {
+		return
+	}
+	data.Documents, err = services.LoadDocuments(id)
+	if checkError(c, err) {
+		return
+	}
+	c.HTML(200, "documents.html", data)
 }

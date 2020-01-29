@@ -1,0 +1,106 @@
+{{define "head"}}
+<link href="https://cdn.jsdelivr.net/npm/summernote@0.8.15/dist/summernote.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/summernote@0.8.15/dist/summernote.min.js"></script>
+{{end}}
+{{define "title"}}Projects{{end}}
+{{define "body"}}
+<div class="container">
+    <div class="row"><h2 class="col-12 text-center mt-4">{{.Project.Title}}</h2></div>
+    <div class="row"><h4 class="col-12 text-center">{{.Project.Description}}</h4></div>
+    
+    {{if .Role.CanWrite}}<button class="btn btn-primary" onclick="createDoc();">Add Document</button>{{end}}
+    {{range .Documents}}
+    <hr class="row">
+    <div class="row" id="doc-{{.ID}}-title" data-path="{{.Path}}"><h4 class="col"><i>{{.Title}}</i></h4><span class="col-1 text-right"><a href="javascript:editDoc({{.ID}});"><span class="fas fa-edit m-2"></span><a><a href="javascript:deleteDoc({{.ID}});"><span class="fas fa-trash"></span></a></span></div>
+    <div class="row"><div class="col" id="doc-{{.ID}}-body"></div></div>
+    {{end}}
+</div>
+
+<div class="modal" id="editorModal" tabindex="-1" role="dialog" aria-labelledby="editorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl" role="document">
+        <form id="editorForm" action="" method="post">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editorModalLabel">#Title</h5>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" name="projectID" id="editorProjectID">
+                    <input type="hidden" name="documentID" id="editorDocumentID">
+                    <input class="mb-1 form-control" type="text" name="title" id="editorInputTitle" placeholder="Title">
+                    <input class="mb-1 form-control" type="text" name="path" id="editorInputPath" placeholder="Path: e.g. /my/path">
+                    <textarea name="body" id="editorInputBody" placeholder="Body"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" id="editorSubmitButton" type="submit">#Submit</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="modal" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <form id="deleteForm" action="/documents/delete" method="post">
+            <input type="hidden" name="projectID" value="{{.Project.ID}}">
+            <input type="hidden" name="documentID" id="deleteDocumentID">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteModalLabel">Delete Document</h5>                    
+                </div>
+                <div class="modal-body">
+                    You are about to delete this document, are you sure?
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-dismiss="modal">No</button>
+                    <button class="btn btn-danger" type="submit">Yes</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function(){
+        {{range .Documents}}
+            $('#doc-{{.ID}}-body').html('{{.Body}}');
+        {{end}}
+
+        $('#editorInputBody').summernote({
+            height: 350            
+        });
+    });
+
+    function createDoc(){
+        $('#editorModalLabel').text('New Document');
+        $('#editorProjectID').val('{{.Project.ID}}');
+        $('#editorDocumentID').val('');        
+        $('#editorInputTitle').val('');
+        $('#editorInputPath').val('');
+        $('#editorInputBody').summernote('code', '');
+        $('#editorSubmitButton').text('Create');
+        $('#editorForm').attr('action', '/documents/create');
+        $('#editorModal').modal('show');
+    }
+
+    function editDoc(docID){
+        let docTitleElem = $('#doc-'+docID+'-title');
+        let title = docTitleElem.text();
+        let path = docTitleElem.data('path');
+        $('#editorModalLabel').text('Edit Document');
+        $('#editorProjectID').val('{{.Project.ID}}');
+        $('#editorDocumentID').val(docID);
+        $('#editorInputTitle').val(title);
+        $('#editorInputPath').val(path);
+        $('#editorInputBody').summernote('code', $('#doc-'+docID+'-body').html());
+        $('#editorSubmitButton').text('Update');
+        $('#editorForm').attr('action', '/documents/edit');
+        $('#editorModal').modal('show');
+    }
+
+    function deleteDoc(docID){
+        $('#deleteDocumentID').val(docID);
+        $('#deleteModal').modal('show');
+    }
+</script>
+{{end}}
