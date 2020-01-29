@@ -78,6 +78,16 @@ func authMiddleware(c *gin.Context) {
 	c.Next()
 }
 
+func adminCheckMiddleware(c *gin.Context) {
+	u := getUser(c)
+	if !u.Admin {
+		c.String(403, "permission-denied")
+		c.Abort()
+		return
+	}
+	c.Next()
+}
+
 func getUser(c *gin.Context) *services.User {
 	u, _ := c.Get("user")
 	return u.(*services.User)

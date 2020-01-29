@@ -52,6 +52,17 @@ func AddHandlers(router *gin.Engine) {
 		r.POST("/delete", deleteDocument)
 		r.POST("/create", createDocument)
 	}
+	adminRouter := privateRouter.Group("/admin")
+	adminRouter.Use(adminCheckMiddleware)
+	{
+		r := adminRouter.Group("/users")
+		r.Use(adminCheckMiddleware)
+		r.GET("/", adminUsersIndex)
+		r.POST("/edit", adminEditUser)
+		r.POST("/delete", adminDeleteUser)
+		r.POST("/create", adminCreateUser)
+		r.POST("/password", adminChangeUserPassword)
+	}
 }
 
 func checkError(c *gin.Context, err error) bool {

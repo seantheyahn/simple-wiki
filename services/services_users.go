@@ -71,6 +71,25 @@ func CreateUser(username string, password string, admin bool, root bool) (*User,
 	return user, nil
 }
 
+//LoadAllUsers --
+func LoadAllUsers() (result []*User, err error) {
+	result = make([]*User, 0)
+	rows, err := DB.Query("select id, created_at, updated_at, username, admin from users")
+	if err != nil {
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		u := new(User)
+		err = rows.Scan(&u.ID, &u.CreatedAt, &u.UpdatedAt, &u.Username, &u.Admin)
+		if err != nil {
+			return
+		}
+		result = append(result, u)
+	}
+	return
+}
+
 //LoadUser --
 func LoadUser(id string) (*User, error) {
 	user := new(User)
@@ -137,4 +156,19 @@ func UpdateUser(id string, username string, admin bool) error {
 	return err
 }
 
-//TODO change password method
+//ChangeUserPassword --
+func ChangeUserPassword(id string, newPassword string) error {
+	hash, err := HashPassword(newPassword)
+	if err != nil {
+		return err
+	}
+	res, err := DB.Exec("update users set password_hash=$1 where id=$2", hash, id)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if n == 0 {
+		err = ErrUserNotFound
+	}
+	return err
+}
