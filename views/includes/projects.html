@@ -20,8 +20,14 @@
                     {{range .UserProjects}}
                     <tr>
                         <td class="table-row" data-href='/projects/view/{{.ID}}'>{{.Title}}</td>
-                        <td>{{.Description}}</td>
-                        <td class="text-right"><a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit m-2"></span></a><a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash"></span></a></td>
+                        <td>{{.Description}}</td>                        
+                        <td class="text-right">  
+                            {{if .CanEdit}}                          
+                            <a href="/projects/users/view/{{.ID}}"><span class="fas fa-user"></span></a>
+                            <a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit ml-2"></span></a>
+                            <a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash ml-2"></span></a>
+                            {{end}}
+                        </td>
                     </tr>
                     {{end}}
                 </tbody>
@@ -37,8 +43,12 @@
                     {{range .AllProjects}}
                     <tr>
                         <td class="table-row" data-href='/projects/view/{{.ID}}'>{{.Title}}</td>
-                        <td>{{.Description}}</td>
-                        <td class="text-right"><a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit m-2"></span></a><a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash"></span></a></td>
+                        <td>{{.Description}}</td>                        
+                        <td class="text-right">  
+                            <a href="/projects/users/view/{{.ID}}"><span class="fas fa-user"></span></a>
+                            <a href="javascript:prepareEditProject({{.ID}}, '{{.Title}}', '{{.Description}}');"><span class="fas fa-edit ml-2"></span></a>
+                            <a href="javascript:deleteProject({{.ID}});"><span class="fas fa-trash ml-2"></span></a>
+                        </td>
                     </tr>
                     {{end}}
                 </tbody>
@@ -120,6 +130,10 @@
             $('#editProject').modal('show');
             $('#editProjectTitle').val(currentTitle);
             $('#editProjectDescription').val(currentDescription);
+        }
+
+        function editProjectUsers(id) {
+
         }
 
         $(document).ready(function($) {

@@ -12,7 +12,7 @@ func createDocument(c *gin.Context) {
 		ProjectID int    `form:"projectID" binding:"required"`
 		Title     string `form:"title" binding:"required"`
 		Body      string `form:"body" binding:"required"`
-		Path      string `form:"path" binding:"required"`
+		SortOrder int    `form:"sortOrder" binding:"required"`
 	}
 	user := getUser(c)
 	doc := new(form)
@@ -25,7 +25,7 @@ func createDocument(c *gin.Context) {
 	}
 
 	if !user.Admin {
-		pu, err := services.LoadProjectUser(doc.ProjectID, user.ID)
+		pu, err := services.LoadRole(doc.ProjectID, user.ID)
 		if checkError(c, err) {
 			return
 		}
@@ -34,7 +34,7 @@ func createDocument(c *gin.Context) {
 			return
 		}
 	}
-	_, err := services.CreateDocument(doc.ProjectID, doc.Title, doc.Body, doc.Path)
+	_, err := services.CreateDocument(doc.ProjectID, doc.Title, doc.Body, doc.SortOrder)
 	if checkError(c, err) {
 		return
 	}
@@ -47,7 +47,7 @@ func editDocument(c *gin.Context) {
 		DocumentID int    `form:"documentID" binding:"required"`
 		Title      string `form:"title" binding:"required"`
 		Body       string `form:"body" binding:"required"`
-		Path       string `form:"path" binding:"required"`
+		SortOrder  int    `form:"sortOrder" binding:"required"`
 	}
 	user := getUser(c)
 	doc := new(form)
@@ -69,7 +69,7 @@ func editDocument(c *gin.Context) {
 	}
 
 	if !user.Admin {
-		pu, err := services.LoadProjectUser(doc.ProjectID, user.ID)
+		pu, err := services.LoadRole(doc.ProjectID, user.ID)
 		if checkError(c, err) {
 			return
 		}
@@ -78,7 +78,7 @@ func editDocument(c *gin.Context) {
 			return
 		}
 	}
-	if checkError(c, services.UpdateDocument(doc.DocumentID, doc.Title, doc.Body, doc.Path)) {
+	if checkError(c, services.UpdateDocument(doc.DocumentID, doc.Title, doc.Body, doc.SortOrder)) {
 		return
 	}
 	c.Redirect(302, fmt.Sprintf("/projects/view/%d", doc.ProjectID))
@@ -105,7 +105,7 @@ func deleteDocument(c *gin.Context) {
 	}
 
 	if !user.Admin {
-		pu, err := services.LoadProjectUser(f.ProjectID, user.ID)
+		pu, err := services.LoadRole(f.ProjectID, user.ID)
 		if checkError(c, err) {
 			return
 		}

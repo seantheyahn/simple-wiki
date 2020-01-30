@@ -41,6 +41,8 @@ func AddHandlers(router *gin.Engine) {
 	{
 		r := privateRouter.Group("/projects")
 		r.GET("/", projectsIndex)
+		r.GET("/users/view/:id", projectUsersIndex)
+		r.POST("/users/update/:action", updateRole)
 		r.GET("/view/:id", viewProject)
 		r.POST("/edit/:id", editProject)
 		r.POST("/delete/:id", deleteProject)
@@ -52,16 +54,13 @@ func AddHandlers(router *gin.Engine) {
 		r.POST("/delete", deleteDocument)
 		r.POST("/create", createDocument)
 	}
-	adminRouter := privateRouter.Group("/admin")
-	adminRouter.Use(adminCheckMiddleware)
 	{
-		r := adminRouter.Group("/users")
-		r.Use(adminCheckMiddleware)
-		r.GET("/", adminUsersIndex)
-		r.POST("/edit", adminEditUser)
-		r.POST("/delete", adminDeleteUser)
-		r.POST("/create", adminCreateUser)
-		r.POST("/password", adminChangeUserPassword)
+		r := privateRouter.Group("/users")
+		r.GET("/", usersIndex)
+		r.POST("/edit", editUser)
+		r.POST("/delete", adminCheckMiddleware, deleteUser)
+		r.POST("/create", adminCheckMiddleware, createUser)
+		r.POST("/password", changeUserPassword)
 	}
 }
 

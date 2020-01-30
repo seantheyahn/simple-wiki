@@ -1,0 +1,158 @@
+{{define "head"}}
+<script src="https://cdn.jsdelivr.net/gh/xcash/bootstrap-autocomplete@v2.3.0/dist/latest/bootstrap-autocomplete.min.js"></script>
+{{end}}
+{{define "title"}}Projects{{end}}
+{{define "body"}}
+<style>
+    .table-row{
+        cursor:pointer;
+    }
+</style>
+
+<div class="container">
+    <div class="row"><h1 class="col-12 text-center mt-4 mb-4">Project Users</h1></div>
+    <div class="row"><h4 class="col text-center">{{.Project.Title}}</h4></div>
+    <div class="row">        
+        <div class="col text-left">
+            <a class="btn btn-primary text-white" href="/projects"><span class="fas fa-angle-left"></span> Back to Projects</a>
+        </div>
+        <div class="col text-right">
+            <a class="btn btn-primary text-white" onclick="addUser();">Add User</a>
+        </div>
+        <div class="container row">
+            <table class="table table-hover mt-2">
+                <tbody>
+                    {{range .ProjectUsers}}
+                    <tr>
+                        <td>{{.Username}}{{if not .CanWrite}} (Read Only){{end}}</td>
+                        <td class="text-right">
+                            <a href="javascript:editUser('{{.ID}}', '{{.Username}}', {{.CanWrite}});"><span class="fas fa-edit ml-2"></span></a>
+                            <a href="javascript:removeUser('{{.ID}}');"><span class="fas fa-times-circle ml-2"></span></a>
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal" id="checkDelete" tabindex="-1" role="dialog" aria-labelledby="checkDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form action="/projects/users/update/remove" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkDeleteLabel">Delete User</h5>                    
+                    </div>
+                    <div class="modal-body">
+                        You are about to remove this user from the project, are you sure?
+                        <input type="hidden" id="deleteInputID" name="userID">
+                        <input type="hidden" name="projectID" value="{{.Project.ID}}">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">No</button>
+                        <button class="btn btn-danger" type="submit">Yes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="addUser" tabindex="-1" role="dialog" aria-labelledby="addUserLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form id="addUserForm" action="" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addUserLabel">#Title</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="projectID" value="{{.Project.ID}}">
+                        <input type="hidden" name="userID" id="inputUserID">
+                        <fieldset id="inputUsernameSet">
+                            <input class="mb-2 form-control" type="text" id="inputUsername" placeholder="Username" autocomplete="off" required data-noresults-text="No results">
+                        </fieldset>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="readonly" id="inputReadOnly">
+                            <label for="inputReadOnly" class="form-check-label">Read Only</label>
+                        </div>              
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit" id="addUserButton">Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function addUser(){
+            $('#inputUsername').val('');
+            $('#inputUsernameSet').removeAttr('disabled');
+            $('#inputReadOnly').removeAttr('checked');
+            $('#addUserForm').attr('action', '/projects/users/update/add').data('mode', 'addUser');
+            $('#addUserLabel').text('Add User');
+            $('#addUser').modal('show');
+        }
+
+        function editUser(id, username, canWrite){
+            $('#inputUsername').val(username);
+            $('#inputUsernameSet').attr('disabled', 'disabled');
+            if(canWrite) {
+                $('#inputReadOnly').removeAttr('checked');
+            } else {
+                $('#inputReadOnly').attr('checked', 'checked');
+            }
+            $('#addUserForm').attr('action', '/projects/users/update/edit').data('mode', 'editUser');
+            $('#addUserLabel').text('Add User');
+            $('#addUser').modal('show');
+        }
+
+        function removeUser(id){                        
+            $('#deleteInputID').val(id);
+            $("#checkDelete").modal("show");
+        }
+
+        var allUsers = [//{{range .AllUsers}}
+            {"id":"{{.ID}}","username":"{{.Username}}"}, //{{end}}
+        ];
+        var projectUsers = [//{{range .ProjectUsers}}
+            {"id":"{{.ID}}","username":"{{.Username}}"}, //{{end}}
+        ];
+
+        $(document).ready(function($) {
+            $(".table-row").click(function() {
+                window.document.location = $(this).data("href");
+            });
+            
+            $('#addUserForm').submit(function(e){
+                let username = $('#inputUsername').val();
+                let item = allUsers.find(function(x){
+                    return x.username.toLowerCase() == username.toLowerCase();
+                });
+                if(!item){
+                    alert('Invalid username!');
+                    e.preventDefault();
+                    return;
+                }
+                $('#inputUserID').val(item.id);         
+            });
+
+            $('#inputUsername').autoComplete({
+                resolver: "custom",
+                minLength: 1,
+                events: {
+                    search: function(qry, cb, elem){
+                        let pu = new Set(projectUsers.map(function(x){return x.username;}));
+                        let lst = allUsers
+                            .map(function(x){return x.username;})
+                            .filter(function(x){                                
+                                return !pu.has(x) && x.toLowerCase().indexOf(qry.toLowerCase()) >= 0;
+                            });
+                        cb(lst);
+                    }
+                }
+            });
+        });
+    </script>
+</div>
+{{end}}

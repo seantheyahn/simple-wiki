@@ -26,11 +26,9 @@
             <li class="nav-item">
               <a class="nav-link" href="/projects">Projects <span class="sr-only">(current)</span></a>
             </li>
-            {{if .User.Admin}}
             <li class="nav-item">
-              <a class="nav-link" href="/admin/users">Users</a>
+              <a class="nav-link" href="/users">User Management</a>
             </li>           
-            {{end}}
             {{end}}
           </ul>
           {{if .User}}

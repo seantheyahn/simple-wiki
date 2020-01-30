@@ -1,0 +1,170 @@
+{{define "head"}}{{end}}
+{{define "title"}}Projects{{end}}
+{{define "body"}}
+<style>
+    .table-row{
+        cursor:pointer;
+    }
+</style>
+
+<div class="container">
+    <div class="row"><h1 class="col-12 text-center mt-4 mb-4">Users</h1></div>
+    <div class="row">        
+        {{if .User.Admin}}
+        <div class="col text-right">
+            <a class="btn btn-primary text-white" onclick="createUser();">New User</a>
+        </div>
+        {{end}}
+        <div class="container row">
+            <table class="table table-hover mt-2">
+                <tbody>
+                    {{range .Users}}
+                    <tr>
+                        <td>{{.Username}}{{if .Admin}} (Admin){{end}}</td>
+                        <td class="text-right">
+                            <a href="javascript:changePassword('{{.ID}}');"><span class="fas fa-key"></span></a>
+                            <a href="javascript:editUser('{{.ID}}', '{{.Username}}', {{.Admin}});"><span class="fas fa-edit ml-2"></span></a>
+                            {{if $.User.Admin}}
+                            <a href="javascript:deleteUser('{{.ID}}');"><span class="fas fa-trash ml-2"></span></a>
+                            {{end}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal" id="checkDelete" tabindex="-1" role="dialog" aria-labelledby="checkDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form action="/users/delete" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="checkDeleteLabel">Delete User</h5>                    
+                    </div>
+                    <div class="modal-body">
+                        You are about to delete this user, are you sure?
+                        <input type="hidden" id="deleteInputID" name="id">
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">No</button>
+                        <button class="btn btn-danger" type="submit">Yes</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="editUser" tabindex="-1" role="dialog" aria-labelledby="editUserLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <form id="editUserForm" action="" method="post">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editUserLabel">#Title</h5>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="inputID">
+                        <input class="mb-1 form-control" type="text" name="username" id="inputUsername" placeholder="Username" pattern="^[A-Za-z_]{1}[A-Za-z_0-9]{3,}$" title="Username must be at least 3 characters consisting of letters, numbers and underscore">
+                        <input class="mb-1 form-control" type="password" name="password" id="inputPassword" placeholder="New Password" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9]).{8,}">
+                        <input class="mb-1 form-control" type="password" id="inputPasswordConfirm" placeholder="Confirm Password">
+                        {{if .User.Admin}}
+                        <div class="form-check" id="inputAdminGroup">
+                            <input class="form-check-input" type="checkbox" name="admin" id="inputAdmin">
+                            <label for="inputAdmin" class="form-check-label">Admin</label>
+                        </div>
+                        {{end}}
+                        <div id="passwordTips">
+                            <p>Password must:</p>
+                            <ul>
+                                <li>Contain at least one lower-case character</li>
+                                <li>Contain at least one upper-case character</li>
+                                <li>Contain at least one number</li>
+                                <li>Be 8 characters or longer</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit" id="editUserSubmit">#Submit</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function createUser(){
+            $('#editUserLabel').text('Create User');
+            $('#editUserSubmit').text('Create');
+            $('#inputUsername').attr('required', 'required').val('').show();
+            $('#inputPassword').attr('required', 'required').val('').show();
+            $('#inputPasswordConfirm').attr('required', '').val('').show();
+            $('#inputAdminGroup').show();
+            $('#inputAdmin').removeAttr('checked');
+            $('#passwordTips').show();
+            $('#editUserForm').attr('action', '/users/create').data('mode', 'createUser');
+            $('#editUser').modal('show');
+        }
+
+        function editUser(id, username, admin){
+            $('#editUserLabel').text('Edit User');
+            $('#editUserSubmit').text('Update');
+            $('#inputID').val(id);
+            $('#inputUsername').attr('required', 'required').val(username).show();
+            //{{if .User.Admin}}
+            if(id == "<root>"){
+                $('#inputAdminGroup').hide();
+            } else {
+                $('#inputAdminGroup').show();
+            }
+            $('#inputAdmin').removeAttr('checked');
+            if(admin) {
+                $('#inputAdmin').attr('checked', 'checked');
+            }
+            //{{end}}
+            $('#inputPassword').removeAttr('required').hide();
+            $('#inputPasswordConfirm').removeAttr('required').hide();            
+            $('#passwordTips').hide();
+            $('#editUserForm').attr('action', '/users/edit').data('mode', 'editUser');
+            $('#editUser').modal('show');
+        }
+
+        function changePassword(id){
+            $('#editUserLabel').text('Change Password');
+            $('#editUserSubmit').text('Change');
+            $('#inputID').val(id);
+            $('#inputUsername').removeAttr('required', 'required').hide();
+            //{{if .User.Admin}}
+            $('#inputAdminGroup').hide();
+            //{{end}}
+            $('#inputPassword').attr('required', 'required').val('').show();
+            $('#inputPasswordConfirm').attr('required', 'required').val('').show();           
+            $('#passwordTips').show();
+            $('#editUserForm').attr('action', '/users/password').data('mode', 'changePassword');
+            $('#editUser').modal('show');
+            $('#editUserForm').data('mode', 'changePassword');
+        }
+
+        function deleteUser(id){
+            if(id == '<root>') {
+                alert('You probably would not want to delete the root user!');
+            }
+            $('#deleteInputID').val(id);
+            $("#checkDelete").modal("show");
+        }
+
+        $(document).ready(function($) {
+            $(".table-row").click(function() {
+                window.document.location = $(this).data("href");
+            });
+            
+            $('#editUserForm').submit(function(e){
+                if($('#editUserForm').data('mode') != 'editUser' && $('#inputPassword').val() != $('#inputPasswordConfirm').val()){
+                    alert("The password and the confirmation don't match");
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+</div>
+{{end}}

@@ -7,10 +7,15 @@ import (
 	"github.com/seantheyahn/simple-wiki/services"
 )
 
+type renderedProject struct {
+	services.Project
+	CanEdit bool
+}
+
 func projectsIndex(c *gin.Context) {
 	data := new(struct {
 		User         *services.User
-		UserProjects []*services.Project
+		UserProjects []*renderedProject
 		AllProjects  []*services.Project
 	})
 	data.User = getUser(c)
@@ -18,13 +23,27 @@ func projectsIndex(c *gin.Context) {
 	if checkError(c, err) {
 		return
 	}
-	data.UserProjects = make([]*services.Project, 0, len(ids))
+	writeMap := make(map[int]bool)
+	if !data.User.Admin {
+		roles, err := services.LoadUserRoles(data.User.ID)
+		if checkError(c, err) {
+			return
+		}
+		for _, r := range roles {
+			writeMap[r.ProjectID] = r.CanWrite
+		}
+	}
+
+	data.UserProjects = make([]*renderedProject, 0, len(ids))
 	for _, id := range ids {
 		p, err := services.LoadProject(id)
 		if checkError(c, err) {
 			return
 		}
-		data.UserProjects = append(data.UserProjects, p)
+		rp := new(renderedProject)
+		rp.Project = *p
+		rp.CanEdit = data.User.Admin || writeMap[p.ID]
+		data.UserProjects = append(data.UserProjects, rp)
 	}
 	if data.User.Admin {
 		ids, err = services.LoadAllProjectIDs()
@@ -44,7 +63,7 @@ func projectsIndex(c *gin.Context) {
 func createProject(c *gin.Context) {
 	type form struct {
 		Title       string `form:"title" binding:"required"`
-		Description string `form:"description" binding:"required"`
+		Description string `form:"description"`
 	}
 	user := getUser(c)
 	project := new(form)
@@ -65,7 +84,7 @@ func createProject(c *gin.Context) {
 func editProject(c *gin.Context) {
 	type form struct {
 		Title       string `form:"title" binding:"required"`
-		Description string `form:"description" binding:"required"`
+		Description string `form:"description"`
 	}
 	user := getUser(c)
 	project := new(form)
@@ -74,7 +93,7 @@ func editProject(c *gin.Context) {
 		return
 	}
 	if !user.Admin {
-		pu, err := services.LoadProjectUser(id, user.ID)
+		pu, err := services.LoadRole(id, user.ID)
 		if checkError(c, err) {
 			return
 		}
@@ -110,7 +129,7 @@ func deleteProject(c *gin.Context) {
 		return
 	}
 	if !user.Admin {
-		pu, err := services.LoadProjectUser(id, user.ID)
+		pu, err := services.LoadRole(id, user.ID)
 		if checkError(c, err) {
 			return
 		}
@@ -130,24 +149,24 @@ func viewProject(c *gin.Context) {
 		User      *services.User
 		Project   *services.Project
 		Documents []*services.Document
-		Role      *services.ProjectUser
+		Role      *services.Role
 	})
 	id, err := strconv.Atoi(c.Param("id"))
 	if checkError(c, err) {
 		return
 	}
-	data.User = getUser(c)
-	if data.User.Admin {
-		data.Role = &services.ProjectUser{ProjectID: data.Project.ID, UserID: data.User.ID, CanWrite: true}
-	} else {
-		data.Role, err = services.LoadProjectUser(id, data.User.ID)
-		if checkError(c, err) {
-			return
-		}
-	}
 	data.Project, err = services.LoadProject(id)
 	if checkError(c, err) {
 		return
+	}
+	data.User = getUser(c)
+	if data.User.Admin {
+		data.Role = &services.Role{ProjectID: data.Project.ID, UserID: data.User.ID, CanWrite: true}
+	} else {
+		data.Role, err = services.LoadRole(id, data.User.ID)
+		if checkError(c, err) {
+			return
+		}
 	}
 	data.Documents, err = services.LoadDocuments(id)
 	if checkError(c, err) {

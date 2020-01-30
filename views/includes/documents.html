@@ -7,12 +7,53 @@
 <div class="container">
     <div class="row"><h2 class="col-12 text-center mt-4">{{.Project.Title}}</h2></div>
     <div class="row"><h4 class="col-12 text-center">{{.Project.Description}}</h4></div>
-    
-    {{if .Role.CanWrite}}<button class="btn btn-primary" onclick="createDoc();">Add Document</button>{{end}}
+    <div class="row align-items-center mt-2">
+        <div class="col text-left">
+            <a class="btn btn-primary text-white" href="/projects"><span class="fas fa-angle-left"></span> Back to Projects</a>
+        </div>
+        <div class="col text-center">
+            <button class="btn btn-sm btn-outline-secondary" onclick="$('.document').collapse('hide');">Colapse All</button>
+            <button class="btn btn-sm btn-outline-secondary" onclick="$('.document').collapse('show');">Expand All</button>
+        </div>    
+        <div class="col text-right">
+            {{if .Role.CanWrite}}<button class="btn btn-primary" onclick="createDoc();"><span class="fas fa-plus"></span></button>{{end}}
+        </div>
+    </div>        
     {{range .Documents}}
-    <hr class="row">
-    <div class="row" id="doc-{{.ID}}-title" data-path="{{.Path}}"><h4 class="col"><i>{{.Title}}</i></h4><span class="col-1 text-right"><a href="javascript:editDoc({{.ID}});"><span class="fas fa-edit m-2"></span><a><a href="javascript:deleteDoc({{.ID}});"><span class="fas fa-trash"></span></a></span></div>
-    <div class="row"><div class="col" id="doc-{{.ID}}-body"></div></div>
+    <div class="row mt-1">
+        <div class="container">
+            <div class="card">
+                <div class="card-header" role="tab" id="cardHeader-{{.ID}}">
+                  <h5 class="mb-0">
+                    <a data-toggle="collapse" href="#doc-{{.ID}}" aria-expanded="true" aria-controls="doc-{{.ID}}">
+                        <div class="container">
+                            <div class="row align-items-center">
+                                <div class="col text-left">
+                                    {{.Title}}
+                                </div>
+                                <div class="col text-right">
+                                    <small>
+                                        <a href="javascript:copyStringToClipboard(getLink({{.ID}}));"><span class="fas fa-link"></span></a>
+                                        {{if $.Role.CanWrite}}
+                                        <a href="javascript:editDoc({{.ID}});"><span class="fas fa-edit ml-1"></span></a>
+                                        <a href="javascript:deleteDoc({{.ID}});"><span class="fas fa-trash ml-1"></span></a>
+                                        {{end}}
+                                    </small>
+                                </div>
+                            </div>
+                        </div>                        
+                    </a>
+                  </h5>
+                </div>
+                <div id="doc-{{.ID}}" class="collapse document" role="tabpanel" aria-labelledby="cardHeader-{{.ID}}" data-title="{{.Title}}" data-sort-order="{{.SortOrder}}">
+                  <div class="card-body">                    
+                    <div class="col" id="doc-{{.ID}}-body"></div>
+                    <div class="text-muted font-italic mt-3"><small class="localDate">{{.UpdatedAt.UTC.Unix}}</small></div>
+                  </div>
+                </div>
+              </div>
+        </div>
+    </div>
     {{end}}
 </div>
 
@@ -26,8 +67,15 @@
                 <div class="modal-body">
                     <input type="hidden" name="projectID" id="editorProjectID">
                     <input type="hidden" name="documentID" id="editorDocumentID">
-                    <input class="mb-1 form-control" type="text" name="title" id="editorInputTitle" placeholder="Title">
-                    <input class="mb-1 form-control" type="text" name="path" id="editorInputPath" placeholder="Path: e.g. /my/path">
+                    <div class="input-group mb-1">
+                        <div class="input-group-prepend">
+                            <span class="input-group-text">
+                                Sort Order
+                            </span>
+                        </div>
+                        <input type="number" name="sortOrder" id="editorInputSortOrder" class="form-control" value="0">
+                    </div>
+                    <input class="mb-1 form-control" type="text" name="title" id="editorInputTitle" placeholder="Title">                    
                     <textarea name="body" id="editorInputBody" placeholder="Body"></textarea>
                 </div>
                 <div class="modal-footer">
@@ -69,6 +117,12 @@
         $('#editorInputBody').summernote({
             height: 350            
         });
+
+        $('.localDate').text(function(index, txt){
+            return 'Last Update: ' + new Date(parseInt(txt)*1000).toLocaleString();
+        });
+
+        try{$('#'+window.location.href.split('#', 2)[1]).collapse('show');}catch{}
     });
 
     function createDoc(){
@@ -76,7 +130,7 @@
         $('#editorProjectID').val('{{.Project.ID}}');
         $('#editorDocumentID').val('');        
         $('#editorInputTitle').val('');
-        $('#editorInputPath').val('');
+        $('#editorInputSortOrder').val(0);
         $('#editorInputBody').summernote('code', '');
         $('#editorSubmitButton').text('Create');
         $('#editorForm').attr('action', '/documents/create');
@@ -84,18 +138,34 @@
     }
 
     function editDoc(docID){
-        let docTitleElem = $('#doc-'+docID+'-title');
-        let title = docTitleElem.text();
-        let path = docTitleElem.data('path');
+        let docElem = $('#doc-'+docID);        
         $('#editorModalLabel').text('Edit Document');
         $('#editorProjectID').val('{{.Project.ID}}');
         $('#editorDocumentID').val(docID);
-        $('#editorInputTitle').val(title);
-        $('#editorInputPath').val(path);
+        $('#editorInputTitle').val(docElem.data('title'));
+        $('#editorInputSortOrder').val(docElem.data('sort-order'));
         $('#editorInputBody').summernote('code', $('#doc-'+docID+'-body').html());
         $('#editorSubmitButton').text('Update');
         $('#editorForm').attr('action', '/documents/edit');
         $('#editorModal').modal('show');
+    }
+
+    function copyStringToClipboard(str){
+        var el = document.createElement('textarea');
+        el.value = str;
+        el.setAttribute('readonly', '');
+        el.style = {position: 'absolute', left: '-9999px'};
+        document.body.appendChild(el);
+        el.select();
+        el.setSelectionRange(0, 9999);
+        document.execCommand('copy');
+        document.body.removeChild(el);
+
+        alert('Copied to clipboard: '+str);
+    }
+
+    function getLink(docID){
+        return window.location.href.split('#', 2)[0] + '#doc-'+docID;
     }
 
     function deleteDoc(docID){

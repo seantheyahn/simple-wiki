@@ -1,7 +1,6 @@
 package services
 
 import (
-	"sort"
 	"time"
 )
 
@@ -12,26 +11,26 @@ type Document struct {
 	ID        int
 	ProjectID int
 	Title     string
-	Path      string
+	SortOrder int
 	Body      string
 }
 
 //CreateDocument --
-func CreateDocument(projectID int, title string, body string, path string) (document *Document, err error) {
+func CreateDocument(projectID int, title string, body string, sortOrder int) (document *Document, err error) {
 	document = &Document{
 		ProjectID: projectID,
 		Title:     title,
 		Body:      body,
-		Path:      path,
+		SortOrder: sortOrder,
 	}
 
-	err = DB.QueryRow("insert into documents (project_id, title, body, path) values($1,$2,$3,$4) returning created_at,updated_at,id", projectID, title, body, path).Scan(&document.CreatedAt, &document.UpdatedAt, &document.ID)
+	err = DB.QueryRow("insert into documents (project_id, title, body, sort_order) values($1,$2,$3,$4) returning created_at,updated_at,id", projectID, title, body, sortOrder).Scan(&document.CreatedAt, &document.UpdatedAt, &document.ID)
 	return
 }
 
 //LoadDocuments loads all the documents of a project
 func LoadDocuments(projectID int) ([]*Document, error) {
-	rows, err := DB.Query("select created_at, updated_at, id, title, path, body from documents where project_id=$1", projectID)
+	rows, err := DB.Query("select created_at, updated_at, id, title, sort_order, body from documents where project_id=$1 order by sort_order", projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -40,16 +39,12 @@ func LoadDocuments(projectID int) ([]*Document, error) {
 	for rows.Next() {
 		doc := new(Document)
 		doc.ProjectID = projectID
-		err = rows.Scan(&doc.CreatedAt, &doc.UpdatedAt, &doc.ID, &doc.Title, &doc.Path, &doc.Body)
+		err = rows.Scan(&doc.CreatedAt, &doc.UpdatedAt, &doc.ID, &doc.Title, &doc.SortOrder, &doc.Body)
 		if err != nil {
 			return nil, err
 		}
 		result = append(result, doc)
 	}
-
-	sort.Slice(result, func(i int, j int) bool {
-		return result[i].CreatedAt.Unix() < result[j].CreatedAt.Unix()
-	})
 	return result, nil
 }
 
@@ -57,7 +52,7 @@ func LoadDocuments(projectID int) ([]*Document, error) {
 func LoadDocument(id int) (*Document, error) {
 	doc := new(Document)
 	doc.ID = id
-	err := DB.QueryRow("select created_at, updated_at, project_id, title, path, body from documents where id=$1", id).Scan(&doc.CreatedAt, &doc.UpdatedAt, &doc.ProjectID, &doc.Title, &doc.Path, &doc.Body)
+	err := DB.QueryRow("select created_at, updated_at, project_id, title, sort_order, body from documents where id=$1", id).Scan(&doc.CreatedAt, &doc.UpdatedAt, &doc.ProjectID, &doc.Title, &doc.SortOrder, &doc.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +60,8 @@ func LoadDocument(id int) (*Document, error) {
 }
 
 //UpdateDocument --
-func UpdateDocument(id int, title string, body string, path string) error {
-	_, err := DB.Exec("update documents set title=$1, body=$2, path=$3 where id=$4", title, body, path, id)
+func UpdateDocument(id int, title string, body string, sortOrder int) error {
+	_, err := DB.Exec("update documents set title=$1, body=$2, sort_order=$3 where id=$4", title, body, sortOrder, id)
 	return err
 }
 

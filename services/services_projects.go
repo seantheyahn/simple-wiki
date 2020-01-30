@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"time"
 )
 
@@ -13,12 +14,15 @@ type Project struct {
 	Description string
 }
 
-//ProjectUser project user model
-type ProjectUser struct {
+//Role project user role model
+type Role struct {
 	ProjectID int
 	UserID    string
 	CanWrite  bool
 }
+
+//ErrRoleNotFound --
+var ErrRoleNotFound = errors.New("role not found")
 
 //CreateProject --
 func CreateProject(title string, description string, user *User) (project *Project, err error) {
@@ -93,9 +97,41 @@ func LoadAllProjectIDs() ([]int, error) {
 	return result, nil
 }
 
-//LoadProjectUser --
-func LoadProjectUser(projectID int, userID string) (*ProjectUser, error) {
-	pu := new(ProjectUser)
+//AddRole --
+func AddRole(projectID int, userID string, canWrite bool) error {
+	_, err := DB.Exec("insert into projects__users (project_id, user_id, can_write) values($1,$2,$3)", projectID, userID, canWrite)
+	return err
+}
+
+//UpdateRole --
+func UpdateRole(projectID int, userID string, canWrite bool) error {
+	res, err := DB.Exec("update projects__users set can_write=$1 where project_id=$2 and user_id=$3", canWrite, projectID, userID)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if n == 0 {
+		return ErrRoleNotFound
+	}
+	return err
+}
+
+//DeleteRole --
+func DeleteRole(projectID int, userID string) error {
+	res, err := DB.Exec("delete from projects__users where project_id=$1 and user_id=$2", projectID, userID)
+	if err != nil {
+		return err
+	}
+	n, err := res.RowsAffected()
+	if n == 0 {
+		return ErrRoleNotFound
+	}
+	return err
+}
+
+//LoadRole --
+func LoadRole(projectID int, userID string) (*Role, error) {
+	pu := new(Role)
 	pu.ProjectID = projectID
 	pu.UserID = userID
 	row := DB.QueryRow("select can_write from projects__users where project_id=$1 and user_id=$2", projectID, userID)
@@ -103,16 +139,35 @@ func LoadProjectUser(projectID int, userID string) (*ProjectUser, error) {
 	return pu, err
 }
 
-//LoadProjectUsers --
-func LoadProjectUsers(projectID int) ([]*ProjectUser, error) {
+//LoadProjectRoles --
+func LoadProjectRoles(projectID int) ([]*Role, error) {
 	rows, err := DB.Query("select project_id, user_id, can_write from projects__users where project_id=$1", projectID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	result := make([]*ProjectUser, 0)
+	result := make([]*Role, 0)
 	for rows.Next() {
-		pu := new(ProjectUser)
+		pu := new(Role)
+		err = rows.Scan(&pu.ProjectID, &pu.UserID, &pu.CanWrite)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, pu)
+	}
+	return result, nil
+}
+
+//LoadUserRoles --
+func LoadUserRoles(userID string) ([]*Role, error) {
+	rows, err := DB.Query("select project_id, user_id, can_write from projects__users where user_id=$1", userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	result := make([]*Role, 0)
+	for rows.Next() {
+		pu := new(Role)
 		err = rows.Scan(&pu.ProjectID, &pu.UserID, &pu.CanWrite)
 		if err != nil {
 			return nil, err
