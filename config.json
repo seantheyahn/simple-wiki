@@ -14,9 +14,6 @@
         "MaxOpenConns": 25,
         "MaxIdleConns": 1
     },
-    "Redis": {
-        "ConnectionURI": "redis://localhost:6370"
-    },
     "RootUser": {
         "Username": "root",
         "Password": "my-complex-password"

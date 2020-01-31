@@ -1,0 +1,28 @@
+version: '3.4'
+
+services:
+  simplewiki:
+    image: seanyahn/simplewiki
+    restart: always
+    ports:
+      - 8080:8080
+    environment: #config overrides
+      CONF__Server__CookieSecret: '"my-super-secret-cookie-secret"' #values must be JSON formatted
+      CONF__Server__CSRFSecret: '"my-csrf-token-secret"'
+      CONF__Server__DevelopmentMode: 'false'
+      CONF__DB__ConnectionURI: '"postgres://wiki:my-complex-db-password@db:5432/wiki?sslmode=disable"'
+      CONF__RootUser__Username: '"root"'
+      CONF__RootUser__Password: '"my-complex-password"'
+    
+  db:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: wiki      
+      POSTGRES_DB: wiki      
+      POSTGRES_PASSWORD: my-complex-db-password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

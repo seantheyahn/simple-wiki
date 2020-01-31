@@ -12,7 +12,7 @@ func createDocument(c *gin.Context) {
 		ProjectID int    `form:"projectID" binding:"required"`
 		Title     string `form:"title" binding:"required"`
 		Body      string `form:"body" binding:"required"`
-		SortOrder int    `form:"sortOrder" binding:"required"`
+		SortOrder int    `form:"sortOrder"`
 	}
 	user := getUser(c)
 	doc := new(form)
@@ -47,7 +47,7 @@ func editDocument(c *gin.Context) {
 		DocumentID int    `form:"documentID" binding:"required"`
 		Title      string `form:"title" binding:"required"`
 		Body       string `form:"body" binding:"required"`
-		SortOrder  int    `form:"sortOrder" binding:"required"`
+		SortOrder  int    `form:"sortOrder"`
 	}
 	user := getUser(c)
 	doc := new(form)

@@ -29,9 +29,6 @@ type Config struct {
 		MaxOpenConns  int
 		MaxIdleConns  int
 	}
-	Redis struct {
-		ConnectionURI string
-	}
 	RootUser struct {
 		Username string
 		Password string
