@@ -11,7 +11,7 @@
     ```
 - Open the url (e.g. localhost:8080) in your browser and login with the root user which is configured in the config.json.
 
-*(Note: The root user is created on the first run or whenever the user with id <root> does not exist in the DB, therefore changing it's username or password in the config won't update it after it is created.)*
+*(Note: The root user is created on the first run or whenever the user with id \<root\> does not exist in the DB, therefore changing it's username or password in the config won't update it after it is created.)*
 ### Config
 Example config.json:
 ```json
