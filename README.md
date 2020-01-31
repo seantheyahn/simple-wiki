@@ -45,7 +45,7 @@ example:
 ```sh
 export CONF__Server__ListenAddress='":8080"' #note the "" for JSON string
 export CONF__Server__DevelopmentMode='true' #this is a JSON bool, no need for ""
-export CONF__DB__ConnectionURI='"postgres://wiki:my-db-password@db:5432/wiki?sslmode=disable"'
+export CONF__DB__ConnectionURI='"postgres://wiki:my-db-password@localhost:5432/wiki?sslmode=disable"'
 ```
 ## Docker Support
 The image is available on [Docker Hub] as [seanyahn/simplewiki](https://hub.docker.com/r/seanyahn/simplewiki).
