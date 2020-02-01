@@ -23,14 +23,9 @@ func Init() {
 	initUsers()
 
 	gob.Register(new(User))
-
-	test() //TODO remove
 }
 
 //Finalize --
 func Finalize() {
 	finalizeLogger()
-}
-
-func test() {
 }
